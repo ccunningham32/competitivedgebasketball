@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- SECTION: Meta -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Basketball Play Conversion Tracker</title>
+
+  <!-- SECTION: Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- SECTION: Styles -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- SECTION: Header -->
+    <header class="app-header">
+      <div class="app-header__titles">
+        <h1 class="app-title">Play Conversion Tracker</h1>
+        <p class="app-subtitle">Track play efficiency by opponent, quarter, half, player, and play call.</p>
+      </div>
+
+      <div class="game-meta">
+        <div class="game-switcher">
+          <div class="game-switcher__header">
+            <span class="field-label">Game Log</span>
+            <button id="add-game-btn" type="button" class="btn btn--primary btn--tiny">New game</button>
+          </div>
+          <select id="game-select" class="select select--game"></select>
+        </div>
+        <label class="field-label" for="opponent-input">Opponent</label>
+        <input id="opponent-input" class="input" type="text" placeholder="e.g. Central High" />
+      </div>
+    </header>
+
+    <!-- SECTION: Config Panels -->
+    <main class="layout-grid">
+      <section class="card card--config" aria-labelledby="rosters-heading">
+        <div class="card__header">
+          <h2 id="rosters-heading" class="card__title">Game Setup</h2>
+        </div>
+
+        <div class="split-columns">
+          <!-- Players -->
+          <div class="config-block">
+            <h3 class="config-block__title">Player Roster</h3>
+            <form id="player-form" class="inline-form" autocomplete="off">
+              <input id="player-name-input" class="input input--compact" type="text" placeholder="Add player name" />
+              <button type="submit" class="btn btn--primary">Add</button>
+            </form>
+            <ul id="player-list" class="pill-list" aria-label="Players"></ul>
+          </div>
+
+          <!-- Plays -->
+          <div class="config-block">
+            <h3 class="config-block__title">Play Roster</h3>
+            <form id="play-form" class="inline-form" autocomplete="off">
+              <input id="play-name-input" class="input input--compact" type="text" placeholder="Add play name" />
+              <button type="submit" class="btn btn--primary">Add</button>
+            </form>
+            <ul id="play-list" class="pill-list" aria-label="Plays"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION: Log Play Result -->
+      <section class="card card--logger" aria-labelledby="log-heading">
+        <div class="card__header">
+          <h2 id="log-heading" class="card__title">Log Play Result</h2>
+          <p class="card__hint">Document every time you run a play – who finished it, outcome, and when.</p>
+        </div>
+
+        <form id="log-form" class="log-form" autocomplete="off">
+          <div class="log-form__row">
+            <div class="field-group">
+              <label class="field-label" for="play-input">Play called</label>
+              <input id="play-input" class="input" type="text" placeholder="Type play name" required />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label" for="player-select">End result player</label>
+              <select id="player-select" class="select" required>
+                <option value="" disabled selected>Select player</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="log-form__row">
+            <div class="field-group">
+              <label class="field-label" for="outcome-select">Outcome</label>
+              <select id="outcome-select" class="select" required>
+                <optgroup label="Positive outcomes">
+                  <option value="Made Layup">Made Layup</option>
+                  <option value="Open 2 Make">Open 2 Make</option>
+                  <option value="Open 2 Miss">Open 2 Miss</option>
+                  <option value="Open 3 Make">Open 3 Make</option>
+                  <option value="Open 3 Miss">Open 3 Miss</option>
+                  <option value="Foul Drawn">Foul Drawn</option>
+                </optgroup>
+                <optgroup label="Negative outcomes">
+                  <option value="Missed Layup">Missed Layup</option>
+                  <option value="Forced 2">Forced 2</option>
+                  <option value="Forced 3">Forced 3</option>
+                  <option value="Turnover">Turnover</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <div class="field-group">
+              <span class="field-label">Quarter</span>
+              <div class="quarter-toggle" id="quarter-toggle" role="radiogroup" aria-label="Quarter">
+                <button type="button" class="chip chip--toggle chip--active" data-quarter="1">Q1</button>
+                <button type="button" class="chip chip--toggle" data-quarter="2">Q2</button>
+                <button type="button" class="chip chip--toggle" data-quarter="3">Q3</button>
+                <button type="button" class="chip chip--toggle" data-quarter="4">Q4</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="log-form__footer">
+            <button type="submit" class="btn btn--accent">Add play result</button>
+            <p class="card__hint">Conversion rate = positive outcomes ÷ total plays run.</p>
+          </div>
+        </form>
+      </section>
+
+      <!-- SECTION: Summary -->
+      <section class="card card--summary" aria-labelledby="summary-heading">
+        <div class="card__header">
+          <h2 id="summary-heading" class="card__title">Game Conversion Summary</h2>
+          <div class="summary-header-meta">
+            <span id="opponent-label" class="tag">No opponent set</span>
+            <span id="total-plays-label" class="tag tag--soft">0 plays logged</span>
+          </div>
+        </div>
+
+        <div class="summary-grid">
+          <div class="summary-panel">
+            <h3 class="summary-panel__title">Overall</h3>
+            <p class="summary-panel__metric" id="overall-conversion">0%</p>
+            <p class="summary-panel__sub" id="overall-breakdown">0 positive / 0 total</p>
+          </div>
+
+          <div class="summary-panel">
+            <h3 class="summary-panel__title">By Half</h3>
+            <div class="summary-panel__rows">
+              <div class="summary-row">
+                <span class="summary-row__label">1st Half (Q1–Q2)</span>
+                <span class="summary-row__metric" id="half1-conversion">0%</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-row__label">2nd Half (Q3–Q4)</span>
+                <span class="summary-row__metric" id="half2-conversion">0%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="summary-panel">
+            <h3 class="summary-panel__title">By Quarter</h3>
+            <div class="summary-panel__rows">
+              <div class="summary-row">
+                <span class="summary-row__label">Q1</span>
+                <span class="summary-row__metric" id="q1-conversion">0%</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-row__label">Q2</span>
+                <span class="summary-row__metric" id="q2-conversion">0%</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-row__label">Q3</span>
+                <span class="summary-row__metric" id="q3-conversion">0%</span>
+              </div>
+              <div class="summary-row">
+                <span class="summary-row__label">Q4</span>
+                <span class="summary-row__metric" id="q4-conversion">0%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION: Season Overview -->
+      <section class="card card--season" aria-labelledby="season-heading">
+        <div class="card__header">
+          <h2 id="season-heading" class="card__title">Season Overview</h2>
+          <p class="card__hint">Aggregated performance across all games in your log.</p>
+        </div>
+
+        <div class="season-grid">
+          <div class="season-panel">
+            <h3 class="season-panel__title">Season Conversion</h3>
+            <p class="season-panel__metric" id="season-overall-rate">0%</p>
+            <p class="season-panel__sub" id="season-overall-breakdown">0 positive / 0 total plays</p>
+          </div>
+
+          <div class="season-panel">
+            <h3 class="season-panel__title">By Game</h3>
+            <ul id="season-games-list" class="season-list" aria-label="Games season summary"></ul>
+          </div>
+
+          <div class="season-panel season-panel--wide">
+            <h3 class="season-panel__title">Top Plays (Season)</h3>
+            <div class="table-wrapper table-wrapper--compact">
+              <table class="log-table log-table--compact">
+                <thead>
+                  <tr>
+                    <th>Play</th>
+                    <th>Positive</th>
+                    <th>Total</th>
+                    <th>Conversion</th>
+                  </tr>
+                </thead>
+                <tbody id="season-top-plays-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION: Detailed Log -->
+      <section class="card card--table" aria-labelledby="log-table-heading">
+        <div class="card__header">
+          <h2 id="log-table-heading" class="card__title">Play Log</h2>
+          <p class="card__hint">Every possession you record appears here with filters by play and player.</p>
+        </div>
+
+        <div class="table-controls">
+          <div class="field-group field-group--inline">
+            <label class="field-label" for="filter-play">Filter by play</label>
+            <select id="filter-play" class="select select--filter">
+              <option value="all">All plays</option>
+            </select>
+          </div>
+
+          <div class="field-group field-group--inline">
+            <label class="field-label" for="filter-player">Filter by player</label>
+            <select id="filter-player" class="select select--filter">
+              <option value="all">All players</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="log-table">
+            <thead>
+              <tr>
+                <th>Quarter</th>
+                <th>Half</th>
+                <th>Play</th>
+                <th>Outcome</th>
+                <th>Result Player</th>
+                <th>Impact</th>
+              </tr>
+            </thead>
+            <tbody id="log-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- SECTION: Scripts -->
+  <script src="script.js"></script>
+</body>
+</html>
